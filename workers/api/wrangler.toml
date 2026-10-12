@@ -3,9 +3,10 @@ main = "src/index.ts"
 compatibility_date = "2024-06-01"
 
 [[d1_databases]]
+migrations_dir = "../../migrations"
 binding = "DB"
 database_name = "kinwise"
-database_id = "REPLACE_ME"
+database_id = "f5b51cd4-ad89-4c7c-803e-306bd3a18183"
 
 [vars]
 FAMILY_TIMEZONE = "Asia/Bangkok"
