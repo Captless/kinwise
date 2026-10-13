@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { expandLocal, medToICS, type Schedule, type Med } from "./db";
+import { expandLocal, type Schedule } from "./db";
 
 const sch: Schedule = { id: "s1", medId: "m1", type: "daily", times: ["08:00", "20:00"], weekdays: [], startDate: "2026-10-01", endDate: "", active: true };
 
@@ -19,19 +19,5 @@ describe("expandLocal", () => {
   });
   it("skips inactive", () => {
     expect(expandLocal([{ ...sch, active: false }], ["2026-10-13"])).toHaveLength(0);
-  });
-});
-
-describe("medToICS", () => {
-  const med = { id: "m1", personId: "p1", name: "TestMed", form: "tablet", strength: "", instructions: "", notes: "", status: "active", startDate: "2026-10-13", endDate: "", pillCount: null, createdAt: "", updatedAt: "" } as Med;
-  it("emits daily recurrence", () => {
-    const ics = medToICS(med, sch);
-    expect(ics).toContain("BEGIN:VCALENDAR");
-    expect(ics).toContain("RRULE:FREQ=DAILY");
-    expect(ics).toContain("SUMMARY:Take TestMed");
-  });
-  it("emits weekly recurrence for weekdays", () => {
-    const ics = medToICS(med, { ...sch, type: "weekdays", weekdays: [1, 3] });
-    expect(ics).toContain("BYDAY=MO,WE");
   });
 });

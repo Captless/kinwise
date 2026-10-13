@@ -131,7 +131,6 @@ export async function setMedStatus(id: string, status: Med["status"]): Promise<v
   }
   await tx.done;
 }
-export async function listSchedules(medId: string): Promise<Schedule[]> { return (await db()).getAllFromIndex("schedules", "by-med", medId); }
 
 // --- Doses ---
 export async function dosesOn(date: string): Promise<Dose[]> {
@@ -199,27 +198,6 @@ export async function listMeasurements(personId: string, limit = 100): Promise<M
   const d = await db();
   const all = personId ? await d.getAllFromIndex("measurements", "by-person", personId) : await d.getAll("measurements");
   return all.sort((a, b) => b.measuredAt.localeCompare(a.measuredAt)).slice(0, limit);
-}
-
-// --- Calendar export (ICS) ---
-const ICS_DAY = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"];
-export function medToICS(med: Med, sch: Schedule): string {
-  const stamp = (d: Date) => `${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}00`;
-  const events = sch.times.map((t) => {
-    const start = new Date(`${sch.startDate}T${t}:00`);
-    const rrule = sch.type === "weekdays" ? `RRULE:FREQ=WEEKLY;BYDAY=${sch.weekdays.map((w) => ICS_DAY[w]).join(",")}` : "RRULE:FREQ=DAILY";
-    const until = sch.endDate || med.endDate ? `\nUNTIL=${(sch.endDate || med.endDate).replaceAll("-", "")}T235959` : "";
-    return ["BEGIN:VEVENT", `UID:${sch.id}-${t.replace(":", "")}@kinwise`, `DTSTAMP:${stamp(new Date())}`, `DTSTART:${stamp(start)}`, `${rrule}${until}`, `SUMMARY:Take ${med.name}`, "END:VEVENT"].join("\n");
-  });
-  return ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//kinwise//meds//EN", ...events, "END:VCALENDAR"].join("\n");
-}
-export function downloadICS(med: Med, sch: Schedule): void {
-  const blob = new Blob([medToICS(med, sch)], { type: "text/calendar" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = `${med.name.replaceAll(" ", "_")}-schedule.ics`;
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
 }
 
 // --- Backup ---

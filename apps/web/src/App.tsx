@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import {
   addMeasurement, addMed, addPerson, adherence, confirmDose, datePlus, dosesOn, doseHistory,
-  downloadICS, ensureDoses, exportJSON, importJSON, listMeasurements, listMeds, listPeople, listSchedules,
+  ensureDoses, exportJSON, importJSON, listMeasurements, listMeds, listPeople,
   reopenDose, savePerson, setMedStatus, toLocalDate,
   type Adherence, type Dose, type Med, type Measurement, type Person,
 } from "./db";
@@ -36,24 +36,22 @@ export default function App() {
   const go = (t: Tab) => { setTab(t); setErr(""); };
   const names = new Map(people.map((p) => [p.id, p]));
   const medNames = new Map(meds.map((m) => [m.id, m.name]));
-  const nav = (cls: string) => (
-    <nav className={cls} aria-label="Primary">{TABS.map((t) => <button key={t} aria-current={tab === t ? "page" : undefined} onClick={() => go(t)}>{t}{t === "today" && dueCount > 0 ? ` (${dueCount})` : ""}</button>)}</nav>
+  const nav = (
+    <nav className="mainnav" aria-label="Primary">{TABS.map((t) => <button key={t} aria-current={tab === t ? "page" : undefined} onClick={() => go(t)}>{t}{t === "today" && dueCount > 0 ? ` (${dueCount})` : ""}</button>)}</nav>
   );
 
   return (
     <div className="shell">
-      <header className="topbar"><div className="brand">Kinwise</div></header>
-      {nav("segnav")}
+      <div className="stickyhead"><header className="topbar"><div className="brand">Kinwise</div></header>{nav}</div>
       <main className="content">
         {err && <p className="err">{err}</p>}
         {tab === "today" && <Today doses={doses} names={names} medNames={medNames} reload={refresh} />}
-        {tab === "meds" && <Meds meds={meds} people={people} names={names} reload={refresh} />}
+        {tab === "meds" && <Meds meds={meds} people={people} reload={refresh} />}
         {tab === "measure" && <Measure people={people} reload={refresh} />}
         {tab === "history" && <History people={people} names={names} medNames={medNames} />}
         {tab === "people" && <People reload={refresh} />}
         {tab === "settings" && <Settings />}
       </main>
-      {nav("tabbar")}
     </div>
   );
 }
@@ -78,12 +76,12 @@ function DoseRow({ d, person, med, reload }: { d: Dose; person?: Person; med: st
       <div className="dline"><span className="rtime">{d.localTime}</span><span className="rname">{med}</span>{od && <span className="chip due">overdue</span>}</div>
       <div className="dsub">For {person?.name ?? "unknown"} · {sub}</div>
       {d.status === "due" && (
-        <div className="ractions">
-          <button className="big" onClick={() => act(confirmDose(d.id, "taken"))}>Taken</button>
-          <button className="ghost" onClick={() => act(confirmDose(d.id, "skipped"))}>Skip</button>
+        <div className="dose-actions">
+          <button className="act take" onClick={() => act(confirmDose(d.id, "taken"))}>Taken</button>
+          <button className="act skip" onClick={() => act(confirmDose(d.id, "skipped"))}>Skip</button>
         </div>
       )}
-      {d.status !== "due" && <div className="ractions"><button className="ghost sm" onClick={() => act(reopenDose(d.id))}>Undo</button></div>}
+      {d.status !== "due" && <div className="dose-actions"><button className="act undo" onClick={() => act(reopenDose(d.id))}>Undo</button></div>}
     </div>
   );
 }
@@ -127,7 +125,7 @@ function PersonPicker({ people, value, onChange, onAdd }: { people: Person[]; va
   );
 }
 
-function Meds({ meds, people, names, reload }: { meds: Med[]; people: Person[]; names: Map<string, Person>; reload: () => void }) {
+function Meds({ meds, people, reload }: { meds: Med[]; people: Person[]; reload: () => void }) {
   const [personId, setPersonId] = useState("");
   const [name, setName] = useState("");
   const [times, setTimes] = useState<string[]>(["08:00"]);
@@ -135,6 +133,11 @@ function Meds({ meds, people, names, reload }: { meds: Med[]; people: Person[]; 
   const [days, setDays] = useState<number[]>([1, 2, 3, 4, 5]);
   const [msg, setMsg] = useState("");
   const setTime = (i: number, v: string) => setTimes((t) => t.map((x, j) => (j === i ? v : x)));
+  const [openGroup, setOpenGroup] = useState<string | null>(null);
+  const [openMed, setOpenMed] = useState<string | null>(null);
+  const groups = [...people.map((p) => ({ id: p.id, name: p.name, color: p.color, items: meds.filter((m) => m.personId === p.id) }))];
+  const unassigned = meds.filter((m) => !people.some((p) => p.id === m.personId));
+  if (unassigned.length) groups.push({ id: "", name: "Unassigned", color: "#999", items: unassigned });
   const save = async () => {
     setMsg("");
     try {
@@ -153,18 +156,34 @@ function Meds({ meds, people, names, reload }: { meds: Med[]; people: Person[]; 
   return (
     <>
       <h1>Medications</h1>
-      {meds.map((m) => (
-        <div className="medcard" key={m.id}>
-          <div className="medinfo"><span className="rname">{m.name}</span><span className={`chip ${m.status === "active" ? "taken" : "skipped"}`}>{m.status}</span></div>
-          <div className="dsub">For {names.get(m.personId)?.name ?? "unknown"}</div>
-          <div className="medactions">
-            {m.status === "active" && <button className="ghost sm" onClick={() => setMedStatus(m.id, "paused").then(() => ensureDoses(toLocalDate(new Date()), datePlus(14)).then(reload))}>Pause</button>}
-            {m.status === "paused" && <button className="ghost sm" onClick={() => setMedStatus(m.id, "active").then(() => ensureDoses(toLocalDate(new Date()), datePlus(14)).then(reload))}>Resume</button>}
-            <button className="ghost sm" onClick={async () => { const s = await listSchedules(m.id); if (s[0]) downloadICS(m, s[0]); }}>Calendar</button>
-            {m.status !== "discontinued" ? <button className="ghost sm danger" onClick={() => { if (confirm("Discontinue? Past records are kept.")) setMedStatus(m.id, "discontinued").then(reload); }}>End</button> : <span />}
+      {groups.filter((g) => g.items.length).map((g, gi) => {
+        const open = openGroup === null ? gi === 0 : openGroup === g.id;
+        return (
+          <div className="pgroup" key={g.id || "unassigned"}>
+            <button className="pgroup-head" onClick={() => setOpenGroup(open ? `__closed_${g.id}` : g.id)} aria-expanded={open}>
+              <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: "50%", background: g.color }} />
+              <span className="pgroup-name">{g.name}</span>
+              <span className="small">{g.items.length}</span>
+              <span className="chev" aria-hidden="true">{open ? "▾" : "▸"}</span>
+            </button>
+            {open && g.items.map((m) => (
+              <div className="medcard" key={m.id}>
+                <button className="medinfo" onClick={() => setOpenMed(openMed === m.id ? null : m.id)} aria-expanded={openMed === m.id}>
+                  <span className="rname">{m.name}</span>
+                  <span className={`chip ${m.status === "active" ? "taken" : "skipped"}`}>{m.status}</span>
+                </button>
+                {openMed === m.id && (
+                  <div className="medactions2">
+                    {m.status === "active" && <button className="ghost sm" onClick={() => setMedStatus(m.id, "paused").then(() => ensureDoses(toLocalDate(new Date()), datePlus(14)).then(reload))}>Pause</button>}
+                    {m.status === "paused" && <button className="ghost sm" onClick={() => setMedStatus(m.id, "active").then(() => ensureDoses(toLocalDate(new Date()), datePlus(14)).then(reload))}>Resume</button>}
+                    {m.status !== "discontinued" ? <button className="ghost sm danger" onClick={() => { if (confirm("Discontinue? Past records are kept.")) setMedStatus(m.id, "discontinued").then(reload); }}>End</button> : <span className="small">ended</span>}
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
-        </div>
-      ))}
+        );
+      })}
       {!meds.length && <div className="empty"><h3>No medications yet</h3></div>}
       <div className="sect">Add medication</div>
       <PersonPicker people={people} value={personId} onChange={setPersonId} onAdd={reload} />
@@ -222,6 +241,7 @@ function History({ people, names, medNames }: { people: Person[]; names: Map<str
   const [doses, setDoses] = useState<Dose[]>([]);
   const [meas, setMeas] = useState<Measurement[]>([]);
   const [adh, setAdh] = useState<Adherence | null>(null);
+  const [hTab, setHTab] = useState<"doses" | "meas">("doses");
   useEffect(() => {
     doseHistory(from, to, personId).then(setDoses);
     listMeasurements(personId).then((all) => setMeas(all.filter((m) => m.measuredAt.slice(0, 10) >= from && m.measuredAt.slice(0, 10) <= to)));
@@ -242,23 +262,33 @@ function History({ people, names, medNames }: { people: Person[]; names: Map<str
         </div>
         <label htmlFor="h-to">To</label><input id="h-to" type="date" value={to} onChange={(e) => setTo(e.target.value)} />
       </div>
-      <div className="sect">Doses</div>
+      <div className="htabs" role="tablist" aria-label="History sections">
+        <button role="tab" aria-selected={hTab === "doses"} className={hTab === "doses" ? "on" : ""} onClick={() => setHTab("doses")}>Doses ({doses.length})</button>
+        <button role="tab" aria-selected={hTab === "meas"} className={hTab === "meas" ? "on" : ""} onClick={() => setHTab("meas")}>Measurements ({meas.length})</button>
+      </div>
+      {hTab === "doses" && (
+      <div className="hscroll">
       {doses.map((d) => (
-        <div className="hrow" key={d.id}>
+        <div className="hcard" key={d.id}>
           <div className="hwhen"><span className="hdate">{d.localDate.slice(5).replace("-", "/")}</span><span className="htime">{d.localTime}</span></div>
           <div className="hwhat"><span className="rname">{medNames.get(d.medId) ?? "Medication"}</span><span className="dsub">For {names.get(d.personId)?.name ?? "unknown"}</span></div>
           <div className={`hstatus ${d.status}`}>{d.status}</div>
         </div>
       ))}
       {!doses.length && <div className="empty"><h3>No dose records in range</h3></div>}
-      <div className="sect">Measurements</div>
+      </div>
+      )}
+      {hTab === "meas" && (
+      <div className="hscroll">
       {meas.map((m) => (
-        <div className="row" key={m.id}>
+        <div className="hcard" key={m.id}>
           <div className="reading"><div><span className="val">{m.spo2}</span><span className="unit"> %</span></div><div><span className="val">{m.pulse}</span><span className="unit"> bpm</span></div></div>
           <div style={{ textAlign: "right" }}><PersonTag p={names.get(m.personId)} /><div className="small">{m.measuredAt.slice(0, 16).replace("T", " ")}</div></div>
         </div>
       ))}
       {!meas.length && <div className="empty"><h3>No measurements in range</h3></div>}
+      </div>
+      )}
     </>
   );
 }
@@ -298,7 +328,7 @@ function Settings() {
       <h1>Settings</h1>
       <div className="sect">Reminders</div>
       <p><span className="devbadge">In development</span></p>
-      <p className="muted">Background reminders ship before deployment. For now, use the Calendar button on any medication.</p>
+      <p className="muted">Background reminders ship before deployment.</p>
       <div className="sect">Backup</div>
       <button className="ghost" style={{ width: "100%", marginBottom: 8 }} onClick={() => exportJSON().then((t) => {
         const a = document.createElement("a");
