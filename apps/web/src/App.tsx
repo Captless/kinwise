@@ -114,7 +114,7 @@ function Today({ doses, names, medNames, reload }: { doses: Dose[]; names: Map<s
   );
 }
 
-function PersonPicker({ people, value, onChange, onAdd }: { people: Person[]; value: string; onChange: (id: string) => void; onAdd: () => void }) {
+function PersonPicker({ people, value, onChange, onAdd, allowAdd = true }: { people: Person[]; value: string; onChange: (id: string) => void; onAdd: () => void; allowAdd?: boolean }) {
   const [adding, setAdding] = useState(false);
   const [name, setName] = useState("");
   return (
@@ -123,9 +123,9 @@ function PersonPicker({ people, value, onChange, onAdd }: { people: Person[]; va
       <select id="pp" value={value} onChange={(e) => { if (e.target.value === "__new") setAdding(true); else onChange(e.target.value); }}>
         <option value="">Select person</option>
         {people.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
-        <option value="__new">Add new person</option>
+        {allowAdd && <option value="__new">Add new person</option>}
       </select>
-      {adding && (
+      {allowAdd && adding && (
         <div className="timerow">
           <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Name" aria-label="New person name" />
           <button className="big" style={{ width: "auto", margin: 0 }} onClick={async () => { if (!name.trim()) return; const p = await addPerson(name); onChange(p.id); onAdd(); setName(""); setAdding(false); }}>Add</button>
@@ -228,23 +228,30 @@ function Meds({ meds, people, reload }: { meds: Med[]; people: Person[]; reload:
 
 function Measure({ people, reload }: { people: Person[]; reload: () => void }) {
   const [personId, setPersonId] = useState("");
-  const [spo2, setSpo2] = useState("98");
-  const [pulse, setPulse] = useState("72");
+  const [spo2, setSpo2] = useState("0");
+  const [pulse, setPulse] = useState("0");
   const [msg, setMsg] = useState("");
+  const [saving, setSaving] = useState(false);
+  const save = () => {
+    if (saving) return;
+    const s = Number(spo2), p = Number(pulse);
+    if (!personId) { setMsg("Choose a person first."); return; }
+    if (!(s >= 50 && s <= 100 && p >= 25 && p <= 250)) { setMsg("Values out of range. Check the device and retype."); return; }
+    setSaving(true);
+    addMeasurement({ personId, spo2: s, pulse: p, measuredAt: new Date().toISOString(), notes: "" })
+      .then(() => { setSpo2("0"); setPulse("0"); setMsg("Saved."); })
+      .catch((e) => setMsg(e.message))
+      .finally(() => setSaving(false));
+  };
   return (
     <>
       <h1>Record measurement</h1>
-      <PersonPicker people={people} value={personId} onChange={setPersonId} onAdd={reload} />
+      <PersonPicker people={people} value={personId} onChange={setPersonId} onAdd={reload} allowAdd={false} />
       <div className="cols2">
-        <div><label htmlFor="spo2">SpO2 percent</label><input id="spo2" value={spo2} inputMode="numeric" onChange={(e) => setSpo2(e.target.value)} /></div>
-        <div><label htmlFor="pulse">Pulse (bpm)</label><input id="pulse" value={pulse} inputMode="numeric" onChange={(e) => setPulse(e.target.value)} /></div>
+        <div><label htmlFor="spo2">SpO2 percent</label><input id="spo2" value={spo2} inputMode="numeric" onChange={(e) => { setSpo2(e.target.value); setMsg(""); }} /></div>
+        <div><label htmlFor="pulse">Pulse (bpm)</label><input id="pulse" value={pulse} inputMode="numeric" onChange={(e) => { setPulse(e.target.value); setMsg(""); }} /></div>
       </div>
-      <button className="big" onClick={() => {
-        const s = Number(spo2), p = Number(pulse);
-        if (!personId) { setMsg("Choose a person first."); return; }
-        if (!(s >= 50 && s <= 100 && p >= 25 && p <= 250)) { setMsg("Values out of range. Check the device and retype."); return; }
-        addMeasurement({ personId, spo2: s, pulse: p, measuredAt: new Date().toISOString(), notes: "" }).then(() => setMsg("Saved.")).catch((e) => setMsg(e.message));
-      }}>Save reading</button>
+      <button className="big" disabled={saving} onClick={save}>Save</button>
       {msg && <p>{msg}</p>}
     </>
   );
