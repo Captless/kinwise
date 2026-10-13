@@ -156,11 +156,11 @@ function Meds({ meds, people, reload }: { meds: Med[]; people: Person[]; reload:
   return (
     <>
       <h1>Medications</h1>
-      {groups.filter((g) => g.items.length).map((g, gi) => {
-        const open = openGroup === null ? gi === 0 : openGroup === g.id;
+      {groups.filter((g) => g.items.length).map((g) => {
+        const open = openGroup === g.id;
         return (
           <div className="pgroup" key={g.id || "unassigned"}>
-            <button className="pgroup-head" onClick={() => setOpenGroup(open ? `__closed_${g.id}` : g.id)} aria-expanded={open}>
+            <button className="pgroup-head" onClick={() => setOpenGroup(open ? null : g.id)} aria-expanded={open}>
               <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: "50%", background: g.color }} />
               <span className="pgroup-name">{g.name}</span>
               <span className="small">{g.items.length}</span>
@@ -234,6 +234,16 @@ function Measure({ people, reload }: { people: Person[]; reload: () => void }) {
   );
 }
 
+function fmtConfirmed(iso: string): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  const date = `${d.getMonth() + 1}/${d.getDate()}/${String(d.getFullYear()).slice(2)}`;
+  let h = d.getHours();
+  const ap = h >= 12 ? "PM" : "AM";
+  h = h % 12 || 12;
+  return `${date}, ${h}:${String(d.getMinutes()).padStart(2, "0")} ${ap}`;
+}
+
 function History({ people, names, medNames }: { people: Person[]; names: Map<string, Person>; medNames: Map<string, string> }) {
   const [personId, setPersonId] = useState("");
   const [from, setFrom] = useState(datePlus(-13));
@@ -261,17 +271,17 @@ function History({ people, names, medNames }: { people: Person[]; names: Map<str
           <div><label htmlFor="h-from">From</label><input id="h-from" type="date" value={from} onChange={(e) => setFrom(e.target.value)} /></div>
         </div>
         <label htmlFor="h-to">To</label><input id="h-to" type="date" value={to} onChange={(e) => setTo(e.target.value)} />
-      </div>
-      <div className="htabs" role="tablist" aria-label="History sections">
-        <button role="tab" aria-selected={hTab === "doses"} className={hTab === "doses" ? "on" : ""} onClick={() => setHTab("doses")}>Doses ({doses.length})</button>
-        <button role="tab" aria-selected={hTab === "meas"} className={hTab === "meas" ? "on" : ""} onClick={() => setHTab("meas")}>Measurements ({meas.length})</button>
+        <div className="htabs" role="tablist" aria-label="History sections">
+          <button role="tab" aria-selected={hTab === "doses"} className={hTab === "doses" ? "on" : ""} onClick={() => setHTab("doses")}>Doses ({doses.length})</button>
+          <button role="tab" aria-selected={hTab === "meas"} className={hTab === "meas" ? "on" : ""} onClick={() => setHTab("meas")}>Measurements ({meas.length})</button>
+        </div>
       </div>
       {hTab === "doses" && (
       <div className="hscroll">
       {doses.map((d) => (
         <div className="hcard" key={d.id}>
           <div className="hwhen"><span className="hdate">{d.localDate.slice(5).replace("-", "/")}</span><span className="htime">{d.localTime}</span></div>
-          <div className="hwhat"><span className="rname">{medNames.get(d.medId) ?? "Medication"}</span><span className="dsub">For {names.get(d.personId)?.name ?? "unknown"}</span></div>
+          <div className="hwhat"><span className="rname">{medNames.get(d.medId) ?? "Medication"}</span><span className="dsub">For {names.get(d.personId)?.name ?? "unknown"}</span>{d.status === "taken" && d.confirmedAt ? <span className="dsub">Taken {fmtConfirmed(d.confirmedAt)}</span> : d.status === "skipped" ? <span className="dsub">Skipped</span> : null}</div>
           <div className={`hstatus ${d.status}`}>{d.status}</div>
         </div>
       ))}
