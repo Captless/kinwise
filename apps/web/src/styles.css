@@ -123,6 +123,9 @@ input[type="time"] { font-variant-numeric: tabular-nums; }
 .daypick button.on { background: var(--green-700); border-color: var(--green-700); color: #fff; }
 
 .empty { padding: 24px 0; color: var(--ink-600); border-bottom: 1px solid var(--line); }
+.overlay { position: fixed; inset: 0; z-index: 50; background: rgba(0, 0, 0, 0.45); display: flex; align-items: center; justify-content: center; padding: 16px; }
+.dialog { width: 100%; max-width: 420px; background: var(--paper); border-radius: var(--radius-sm); padding: 20px 16px 16px; }
+.dialog h2 { margin-bottom: 12px; }
 .skel { border-radius: var(--radius-sm); background: linear-gradient(90deg, var(--paper-warm), var(--green-50), var(--paper-warm)); min-height: 64px; margin-bottom: 8px; }
 .cols2 { display: grid; grid-template-columns: 1fr; gap: 0 16px; }
 

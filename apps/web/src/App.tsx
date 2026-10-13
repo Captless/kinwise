@@ -6,8 +6,8 @@ import {
   type Adherence, type Dose, type Med, type Measurement, type Person,
 } from "./db";
 
-type Tab = "today" | "meds" | "measure" | "history" | "people" | "settings";
-const TABS: Tab[] = ["today", "meds", "measure", "history", "people", "settings"];
+type Tab = "today" | "meds" | "measure" | "history" | "settings";
+const TABS: Tab[] = ["today", "meds", "measure", "history", "settings"];
 const DAYS = ["S", "M", "T", "W", "T", "F", "S"];
 
 export default function App() {
@@ -49,8 +49,7 @@ export default function App() {
         {tab === "meds" && <Meds meds={meds} people={people} reload={refresh} />}
         {tab === "measure" && <Measure people={people} reload={refresh} />}
         {tab === "history" && <History people={people} names={names} medNames={medNames} />}
-        {tab === "people" && <People reload={refresh} />}
-        {tab === "settings" && <Settings />}
+        {tab === "settings" && <Settings reload={refresh} />}
       </main>
     </div>
   );
@@ -130,6 +129,7 @@ function Meds({ meds, people, reload }: { meds: Med[]; people: Person[]; reload:
   const setTime = (i: number, v: string) => setTimes((t) => t.map((x, j) => (j === i ? v : x)));
   const [openGroup, setOpenGroup] = useState<string | null>(null);
   const [openMed, setOpenMed] = useState<string | null>(null);
+  const [showAdd, setShowAdd] = useState(false);
   const groups = [...people.map((p) => ({ id: p.id, name: p.name, color: p.color, items: meds.filter((m) => m.personId === p.id) }))];
   const unassigned = meds.filter((m) => !people.some((p) => p.id === m.personId));
   if (unassigned.length) groups.push({ id: "", name: "Unassigned", color: "#999", items: unassigned });
@@ -143,7 +143,7 @@ function Meds({ meds, people, reload }: { meds: Med[]; people: Person[]; reload:
       if (mode === "weekdays" && !days.length) throw new Error("Pick at least one day.");
       const start = toLocalDate(new Date());
       await addMed({ personId, name: name.trim(), form: "tablet", strength: "", instructions: "", notes: "", status: "active", startDate: start, endDate: "", pillCount: null }, clean, days, mode);
-      setName(""); setTimes(["08:00"]); setMode("daily");
+      setName(""); setTimes(["08:00"]); setMode("daily"); setShowAdd(false);
       await ensureDoses(start, datePlus(14));
       reload();
     } catch (e: any) { setMsg(e.message); }
@@ -180,7 +180,10 @@ function Meds({ meds, people, reload }: { meds: Med[]; people: Person[]; reload:
         );
       })}
       {!meds.length && <div className="empty"><h3>No medications yet</h3></div>}
-      <div className="sect">Add medication</div>
+      <button className="ghost" style={{ width: "100%", marginTop: 12 }} onClick={() => setShowAdd((v) => !v)} aria-expanded={showAdd}>{showAdd ? "Close" : "+ Add medication"}</button>
+      {showAdd && (
+      <>
+      <div className="sect">New medication</div>
       <PersonPicker people={people} value={personId} onChange={setPersonId} onAdd={reload} />
       <label htmlFor="med-name">Medication name</label>
       <input id="med-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="As written on the package" />
@@ -201,6 +204,8 @@ function Meds({ meds, people, reload }: { meds: Med[]; people: Person[]; reload:
       <button className="ghost" style={{ width: "100%" }} onClick={() => setTimes((t) => [...t, "12:00"])}>Add time</button>
       <button className="big" onClick={save}>Add medication</button>
       {msg && <p className="err">{msg}</p>}
+      </>
+      )}
     </>
   );
 }
@@ -337,11 +342,21 @@ function History({ people, names, medNames }: { people: Person[]; names: Map<str
 function People({ reload }: { reload: () => void }) {
   const [list, setList] = useState<Person[]>([]);
   const [name, setName] = useState("");
+  const [showModal, setShowModal] = useState(false);
   const load = async () => { setList(await listPeople()); reload(); };
   useEffect(() => { load(); }, []);
+  useEffect(() => {
+    if (!showModal) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setShowModal(false); };
+    window.addEventListener("keydown", onKey);
+    return () => { document.body.style.overflow = prev; window.removeEventListener("keydown", onKey); };
+  }, [showModal]);
+  const add = () => { if (!name.trim()) return; addPerson(name).then(() => { setName(""); setShowModal(false); load(); }); };
   return (
     <>
-      <h1>People</h1>
+      <div className="sect">People</div>
       <p className="muted">Deactivating hides them from pickers but keeps records.</p>
       {list.map((p) => (
         <div className="row" key={p.id}>
@@ -350,15 +365,25 @@ function People({ reload }: { reload: () => void }) {
         </div>
       ))}
       {!list.length && <div className="empty"><h3>Nobody here yet</h3></div>}
-      <div className="sect">Add person</div>
-      <label htmlFor="person-name">Name</label>
-      <input id="person-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Grandma Lin" />
-      <button className="big" onClick={() => { if (!name.trim()) return; addPerson(name).then(() => { setName(""); load(); }); }}>Add person</button>
+      <button className="ghost" style={{ width: "100%", marginTop: 8 }} onClick={() => setShowModal(true)}>+ Add person</button>
+      {showModal && (
+        <div className="overlay" onClick={() => setShowModal(false)}>
+          <div className="dialog" role="dialog" aria-modal="true" aria-label="Add person" onClick={(e) => e.stopPropagation()}>
+            <h2>Add person</h2>
+            <label htmlFor="person-name">Name</label>
+            <input id="person-name" autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Grandma Lin" onKeyDown={(e) => { if (e.key === "Enter") add(); }} />
+            <div className="dose-actions">
+              <button className="act skip" onClick={() => setShowModal(false)}>Cancel</button>
+              <button className="act take" onClick={add}>Add</button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
 
-function Settings() {
+function Settings({ reload }: { reload: () => void }) {
   const [msg, setMsg] = useState("");
   const onFile = (f: File | undefined) => {
     if (!f) return;
@@ -367,6 +392,7 @@ function Settings() {
   return (
     <>
       <h1>Settings</h1>
+      <People reload={reload} />
       <div className="sect">Reminders</div>
       <p><span className="devbadge">In development</span></p>
       <p className="muted">Background reminders ship before deployment.</p>
