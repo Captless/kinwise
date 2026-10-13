@@ -36,9 +36,10 @@ export async function verifySession(req: Request, secret: string, version: numbe
     return false;
   }
 }
+// SameSite=None: API lives cross-origin (Pages -> workers.dev), cookie must attach on fetch.
 export function sessionCookie(signed: string): string {
-  return `${COOKIE}=${signed}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${90 * 86400}`;
+  return `${COOKIE}=${signed}; Path=/; HttpOnly; Secure; SameSite=None; Max-Age=${90 * 86400}`;
 }
 export function clearCookie(): string {
-  return `${COOKIE}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0`;
+  return `${COOKIE}=; Path=/; HttpOnly; Secure; SameSite=None; Max-Age=0`;
 }

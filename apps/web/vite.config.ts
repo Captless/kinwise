@@ -6,7 +6,9 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: "prompt",
+      strategies: "injectManifest",
+      srcDir: "src",
+      filename: "sw.ts",
       manifest: {
         name: "Kinwise Family Meds",
         short_name: "Kinwise",
@@ -15,7 +17,6 @@ export default defineConfig({
         theme_color: "#1a5c3f",
         icons: [{ src: "icon-192.png", sizes: "192x192", type: "image/png" }],
       },
-      workbox: { runtimeCaching: [{ urlPattern: /^https:\/\/.*\/api\/today.*/, handler: "NetworkFirst", options: { cacheName: "today-cache" } }] },
     }),
   ],
   server: { proxy: { "/api": "http://localhost:8787" } },

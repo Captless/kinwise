@@ -129,7 +129,8 @@ function Settings() {
       const perm = await Notification.requestPermission();
       if (perm !== "granted") { setMsg("Permission denied. Enable in iPhone Settings after Home Screen install."); return; }
       const reg = await navigator.serviceWorker.ready;
-      const key = (window as any).__VAPID_PUBLIC_KEY as string;
+      const key = import.meta.env.VITE_VAPID_PUBLIC_KEY as string | undefined;
+      if (!key) { setMsg("App missing push config. Rebuild required."); return; }
       const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: Uint8Array.from(atob(key.replaceAll("-", "+").replaceAll("_", "/")), (c) => c.charCodeAt(0)) });
       const p = sub.toJSON();
       await api.call("/api/push/subscriptions", { method: "POST", body: JSON.stringify({ endpoint: p.endpoint, subscription_keys: p.keys, device_label: navigator.userAgent.slice(0, 80) }) });

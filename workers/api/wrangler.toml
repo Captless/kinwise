@@ -10,6 +10,7 @@ database_id = "f5b51cd4-ad89-4c7c-803e-306bd3a18183"
 
 [vars]
 FAMILY_TIMEZONE = "Asia/Bangkok"
+API_ORIGIN = "https://kinwise.pages.dev,https://8e834d8a.kinwise.pages.dev"
 
 [triggers]
 crons = ["* * * * *"]

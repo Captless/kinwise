@@ -17,8 +17,11 @@ const json = (d: unknown, s = 200, h: HeadersInit = {}) =>
   new Response(JSON.stringify(d), { status: s, headers: { "content-type": "application/json", ...h } });
 const attempts = new Map<string, { n: number; t: number }>();
 
-function cors(env: Env): Record<string, string> {
-  return { "access-control-allow-origin": env.API_ORIGIN, "access-control-allow-credentials": "true", vary: "Origin" };
+function cors(env: Env, req: Request): Record<string, string> {
+  const allowed = (env.API_ORIGIN ?? "").split(",").map((s) => s.trim()).filter(Boolean);
+  const origin = req.headers.get("Origin") ?? "";
+  const match = allowed.includes(origin) ? origin : (allowed[0] ?? "");
+  return { "access-control-allow-origin": match, "access-control-allow-credentials": "true", vary: "Origin" };
 }
 async function authed(req: Request, env: Env): Promise<boolean> {
   return verifySession(req, env.SESSION_SECRET, Number(env.CODE_VERSION ?? "1"));
@@ -59,7 +62,7 @@ export default {
   async fetch(req: Request, env: Env): Promise<Response> {
     const url = new URL(req.url);
     const p = url.pathname;
-    const C = cors(env);
+    const C = cors(env, req);
     if (req.method === "OPTIONS") return new Response(null, { headers: { ...C, "access-control-allow-methods": "GET,POST,PATCH,DELETE", "access-control-allow-headers": "content-type" } });
     const ip = req.headers.get("cf-connecting-ip") ?? "local";
 
