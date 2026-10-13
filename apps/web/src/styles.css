@@ -72,7 +72,8 @@ p { margin: 0 0 12px; }
 .pgroup-head { display: flex; align-items: center; gap: 8px; width: 100%; padding: 10px 0; background: none; border: 0; cursor: pointer; font-family: inherit; font-size: var(--body); font-weight: 700; color: var(--ink-900); }
 .pgroup-name { flex: 1; text-align: left; }
 .chev { color: var(--ink-400); font-size: var(--caption); }
-.hpane { display: flex; flex-direction: column; height: calc(100dvh - var(--head-h) - 24px); }
+.hpane { display: flex; flex-direction: column; height: calc(100dvh - var(--head-h) - 16px); }
+.content:has(.hpane) { padding-bottom: 8px; }
 .hpane h1 { margin-bottom: 4px; }
 .hfilters { flex: none; }
 .hero { display: flex; align-items: center; gap: 14px; padding: 12px; border-radius: var(--radius-sm); background: var(--green-700); color: #fff; margin-bottom: 8px; }
@@ -104,7 +105,7 @@ p { margin: 0 0 12px; }
 .htabs { display: flex; gap: 4px; margin: 10px 0 4px; }
 .htabs button { flex: 1 1 0; min-width: 0; padding: 7px 4px; font-size: 14px; font-weight: 700; border-radius: 999px; border: 1px solid var(--line); background: var(--paper); color: var(--ink-600); cursor: pointer; font-family: inherit; white-space: nowrap; }
 .htabs button.on { background: var(--green-700); border-color: var(--green-700); color: #fff; }
-.hscroll { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding: 0 0 8px; }
+.hscroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; display: flex; flex-direction: column; gap: 6px; padding: 0 0 8px; }
 .hwhen { min-width: 56px; }
 .htime { font-size: var(--body); }
 .hwhat .rname { font-size: 15px; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
