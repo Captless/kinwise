@@ -82,18 +82,34 @@ function DoseRow({ d, person, med, reload }: { d: Dose; person?: Person; med: st
 
 function Today({ doses, names, medNames, reload }: { doses: Dose[]; names: Map<string, Person>; medNames: Map<string, string>; reload: () => void }) {
   const now = new Date().toISOString();
+  const [showDone, setShowDone] = useState(false);
   const overdue = doses.filter((d) => d.status === "due" && d.scheduledAt <= now);
-  const rest = doses.filter((d) => !(d.status === "due" && d.scheduledAt <= now));
+  const upcoming = doses.filter((d) => d.status === "due" && d.scheduledAt > now);
+  const done = doses.filter((d) => d.status !== "due");
   if (!doses.length) return <><h1>Today</h1><div className="empty"><h3>Nothing scheduled</h3><p className="muted">Add a medication to begin.</p></div></>;
   return (
     <>
       <h1>Today</h1>
-      <p className="muted">{overdue.length ? `${overdue.length} overdue. Start here.` : "All caught up for now."}</p>
+      <p className="muted">{overdue.length ? `${overdue.length} overdue. Start here.` : upcoming.length ? "All caught up for now." : "All done for today."}</p>
       {overdue.length > 0 && <div className="overband">{overdue.length} dose{overdue.length > 1 ? "s" : ""} past time</div>}
       <div className="rail">
         {overdue.map((d) => <DoseRow key={d.id} d={d} person={names.get(d.personId)} med={medNames.get(d.medId) ?? "Medication"} reload={reload} />)}
-        {rest.map((d) => <DoseRow key={d.id} d={d} person={names.get(d.personId)} med={medNames.get(d.medId) ?? "Medication"} reload={reload} />)}
+        {upcoming.map((d) => <DoseRow key={d.id} d={d} person={names.get(d.personId)} med={medNames.get(d.medId) ?? "Medication"} reload={reload} />)}
       </div>
+      {done.length > 0 && (
+        <div className="pgroup">
+          <button className="pgroup-head" onClick={() => setShowDone((v) => !v)} aria-expanded={showDone}>
+            <span className="pgroup-name">Completed</span>
+            <span className="small">{done.length}</span>
+            <span className="chev" aria-hidden="true">{showDone ? "▾" : "▸"}</span>
+          </button>
+          {showDone && (
+            <div className="rail">
+              {done.map((d) => <DoseRow key={d.id} d={d} person={names.get(d.personId)} med={medNames.get(d.medId) ?? "Medication"} reload={reload} />)}
+            </div>
+          )}
+        </div>
+      )}
     </>
   );
 }
