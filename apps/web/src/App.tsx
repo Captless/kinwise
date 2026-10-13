@@ -42,7 +42,7 @@ export default function App() {
 
   return (
     <div className="shell">
-      <div className="stickyhead"><header className="topbar"><div className="brand">Kinwise</div></header>{nav}</div>
+      <div className="stickyhead">{nav}</div>
       <main className="content">
         {err && <p className="err">{err}</p>}
         {tab === "today" && <Today doses={doses} names={names} medNames={medNames} reload={refresh} />}
