@@ -75,15 +75,20 @@ p { margin: 0 0 12px; }
 .hpane { display: flex; flex-direction: column; height: calc(100dvh - var(--head-h) - 24px); }
 .hpane h1 { margin-bottom: 4px; }
 .hfilters { flex: none; }
-.hsummary { margin: 0 0 8px; font-size: var(--caption); color: var(--ink-600); }
+.hsummary { margin: 0 0 8px; font-size: var(--caption); color: var(--ink-600); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fcols3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
 .fcols3 input, .fcols3 select { font-size: 14px; padding: 9px 8px; margin: 4px 0 8px; }
 .fcols3 label { font-size: var(--caption); }
 .htabs { display: flex; gap: 4px; margin: 10px 0 4px; }
-.htabs button { flex: 1 1 0; min-width: 0; padding: 9px 4px; font-size: 15px; font-weight: 700; border-radius: 999px; border: 1px solid var(--line); background: var(--paper); color: var(--ink-600); cursor: pointer; font-family: inherit; white-space: nowrap; }
+.htabs button { flex: 1 1 0; min-width: 0; padding: 7px 4px; font-size: 14px; font-weight: 700; border-radius: 999px; border: 1px solid var(--line); background: var(--paper); color: var(--ink-600); cursor: pointer; font-family: inherit; white-space: nowrap; }
 .htabs button.on { background: var(--green-700); border-color: var(--green-700); color: #fff; }
-.hscroll { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding: 8px 0; }
-.hcard { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 0; border-radius: var(--radius-sm); background: var(--green-50); }
+.hscroll { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding: 8px 0; }
+.hcard { display: flex; align-items: center; gap: 10px; padding: 7px 10px; border: 0; border-radius: var(--radius-sm); background: var(--green-50); min-height: 52px; }
+.hwhen { min-width: 56px; }
+.htime { font-size: var(--body); }
+.hwhat .rname { font-size: 15px; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hwhat .dsub { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hstatus { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; min-width: 56px; }
 .hwhen { display: flex; flex-direction: column; min-width: 64px; font-variant-numeric: tabular-nums; }
 .hdate { font-size: var(--caption); color: var(--ink-400); font-weight: 700; }
 .htime { font-weight: 800; color: var(--green-900); }
@@ -111,9 +116,6 @@ input[type="time"] { font-variant-numeric: tabular-nums; }
 .daypick button { flex: 1; padding: 10px 0; border-radius: var(--radius-sm); border: 1px solid var(--line); background: var(--paper); font-weight: 700; cursor: pointer; font-family: inherit; }
 .daypick button.on { background: var(--green-700); border-color: var(--green-700); color: #fff; }
 
-.reading { display: flex; gap: 24px; align-items: baseline; }
-.reading .val { font-size: var(--display); font-weight: 800; color: var(--green-900); font-variant-numeric: tabular-nums; }
-.reading .unit { font-size: var(--caption); color: var(--ink-400); }
 .empty { padding: 24px 0; color: var(--ink-600); border-bottom: 1px solid var(--line); }
 .skel { border-radius: var(--radius-sm); background: linear-gradient(90deg, var(--paper-warm), var(--green-50), var(--paper-warm)); min-height: 64px; margin-bottom: 8px; }
 .cols2 { display: grid; grid-template-columns: 1fr; gap: 0 16px; }

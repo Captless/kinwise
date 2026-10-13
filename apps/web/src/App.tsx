@@ -56,11 +56,6 @@ export default function App() {
   );
 }
 
-function PersonTag({ p }: { p?: Person }) {
-  if (!p) return <span className="chip">unknown</span>;
-  return <span className="chip"><span style={{ display: "inline-block", width: 9, height: 9, borderRadius: "50%", background: p.color, marginRight: 6 }} />{p.name}</span>;
-}
-
 function DoseRow({ d, person, med, reload }: { d: Dose; person?: Person; med: string; reload: () => void }) {
   const nowMs = Date.now();
   const diffMin = Math.round((nowMs - new Date(d.scheduledAt).getTime()) / 60000);
@@ -281,7 +276,7 @@ function History({ people, names, medNames }: { people: Person[]; names: Map<str
       {doses.map((d) => (
         <div className="hcard" key={d.id}>
           <div className="hwhen"><span className="hdate">{d.localDate.slice(5).replace("-", "/")}</span><span className="htime">{d.localTime}</span></div>
-          <div className="hwhat"><span className="rname">{medNames.get(d.medId) ?? "Medication"}</span><span className="dsub">For {names.get(d.personId)?.name ?? "unknown"}</span>{d.status === "taken" && d.confirmedAt ? <span className="dsub">Taken {fmtConfirmed(d.confirmedAt)}</span> : d.status === "skipped" ? <span className="dsub">Skipped</span> : null}</div>
+          <div className="hwhat"><span className="rname">{medNames.get(d.medId) ?? "Medication"}</span><span className="dsub">For {names.get(d.personId)?.name ?? "unknown"}{d.status === "taken" && d.confirmedAt ? ` · Taken ${fmtConfirmed(d.confirmedAt)}` : d.status === "skipped" ? " · Skipped" : ""}</span></div>
           <div className={`hstatus ${d.status}`}>{d.status}</div>
         </div>
       ))}
@@ -292,8 +287,7 @@ function History({ people, names, medNames }: { people: Person[]; names: Map<str
       <div className="hscroll">
       {meas.map((m) => (
         <div className="hcard" key={m.id}>
-          <div className="reading"><div><span className="val">{m.spo2}</span><span className="unit"> %</span></div><div><span className="val">{m.pulse}</span><span className="unit"> bpm</span></div></div>
-          <div style={{ textAlign: "right" }}><PersonTag p={names.get(m.personId)} /><div className="small">{m.measuredAt.slice(0, 16).replace("T", " ")}</div></div>
+          <div className="hwhat"><span className="rname">{m.spo2}% · {m.pulse} bpm</span><span className="dsub">For {names.get(m.personId)?.name ?? "unknown"} · {m.measuredAt.slice(0, 16).replace("T", " ")}</span></div>
         </div>
       ))}
       {!meas.length && <div className="empty"><h3>No measurements in range</h3></div>}
