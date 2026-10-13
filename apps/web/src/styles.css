@@ -3,7 +3,7 @@
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
 body {
-  font: 400 var(--body) / 1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+  font: 400 var(--body) / 1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
   color: var(--ink-900);
   background: var(--paper-warm);
   -webkit-font-smoothing: antialiased;
@@ -71,7 +71,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 
 /* Forms */
 label { font-weight: 650; font-size: var(--body); display: block; }
-input, select, textarea { width: 100%; font-size: 18px; padding: 12px 14px; margin: 6px 0 14px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--paper); color: var(--ink-900); font-family: inherit; }
+input, select, textarea { width: 100%; font-size: 18px; padding: 12px 14px; margin: 6px 0 14px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--paper); color: var(--ink-900); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
 .measure-grid { display: grid; gap: 0 16px; }
 .empty { text-align: left; padding: 24px 18px; border: 1px dashed var(--line); border-radius: var(--radius); background: var(--paper); color: var(--ink-600); }
 .skel { border-radius: var(--radius); background: linear-gradient(90deg, var(--paper-warm), var(--green-50), var(--paper-warm)); min-height: 88px; margin-bottom: 14px; }
