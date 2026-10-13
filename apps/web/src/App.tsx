@@ -64,15 +64,19 @@ function PersonTag({ p }: { p?: Person }) {
 }
 
 function DoseRow({ d, person, med, reload }: { d: Dose; person?: Person; med: string; reload: () => void }) {
-  const now = new Date().toISOString();
-  const od = d.status === "due" && d.scheduledAt <= now;
+  const nowMs = Date.now();
+  const diffMin = Math.round((nowMs - new Date(d.scheduledAt).getTime()) / 60000);
+  const od = d.status === "due" && diffMin > 0;
   const cls = d.status === "taken" ? "ritem done" : od ? "ritem overdue" : "ritem";
+  const sub =
+    d.status === "taken" ? `Taken${d.confirmedAt ? ` ${d.confirmedAt.slice(11, 16)}` : ""}` :
+    d.status === "skipped" ? "Skipped" :
+    od ? `Overdue ${diffMin} min` : diffMin > -15 ? "Due now" : `Due in ${-diffMin} min`;
   const act = (fn: Promise<void>) => fn.then(reload);
   return (
     <div className={cls}>
-      <div className="rtime">{d.localTime}</div>
-      <div className="rname">{med}</div>
-      <div style={{ margin: "4px 0" }}><PersonTag p={person} /> <span className={`chip ${od ? "due" : d.status}`}>{od ? "overdue" : d.status}</span></div>
+      <div className="dline"><span className="rtime">{d.localTime}</span><span className="rname">{med}</span>{od && <span className="chip due">overdue</span>}</div>
+      <div className="dsub">For {person?.name ?? "unknown"} · {sub}</div>
       {d.status === "due" && (
         <div className="ractions">
           <button className="big" onClick={() => act(confirmDose(d.id, "taken"))}>Taken</button>
@@ -150,13 +154,14 @@ function Meds({ meds, people, names, reload }: { meds: Med[]; people: Person[]; 
     <>
       <h1>Medications</h1>
       {meds.map((m) => (
-        <div className="row" key={m.id}>
-          <div><div className="rname">{m.name}</div><PersonTag p={names.get(m.personId)} /> <span className={`chip ${m.status === "active" ? "taken" : "skipped"}`}>{m.status}</span></div>
-          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "flex-end" }}>
+        <div className="medcard" key={m.id}>
+          <div className="medinfo"><span className="rname">{m.name}</span><span className={`chip ${m.status === "active" ? "taken" : "skipped"}`}>{m.status}</span></div>
+          <div className="dsub">For {names.get(m.personId)?.name ?? "unknown"}</div>
+          <div className="medactions">
             {m.status === "active" && <button className="ghost sm" onClick={() => setMedStatus(m.id, "paused").then(() => ensureDoses(toLocalDate(new Date()), datePlus(14)).then(reload))}>Pause</button>}
             {m.status === "paused" && <button className="ghost sm" onClick={() => setMedStatus(m.id, "active").then(() => ensureDoses(toLocalDate(new Date()), datePlus(14)).then(reload))}>Resume</button>}
             <button className="ghost sm" onClick={async () => { const s = await listSchedules(m.id); if (s[0]) downloadICS(m, s[0]); }}>Calendar</button>
-            {m.status !== "discontinued" && <button className="ghost sm danger" onClick={() => { if (confirm("Discontinue? Past records are kept.")) setMedStatus(m.id, "discontinued").then(reload); }}>End</button>}
+            {m.status !== "discontinued" ? <button className="ghost sm danger" onClick={() => { if (confirm("Discontinue? Past records are kept.")) setMedStatus(m.id, "discontinued").then(reload); }}>End</button> : <span />}
           </div>
         </div>
       ))}
@@ -225,21 +230,24 @@ function History({ people, names, medNames }: { people: Person[]; names: Map<str
   return (
     <>
       <h1>History</h1>
-      {adh && <p className="muted">Last 7 days: {Math.round(adh.rate * 100)} percent taken ({adh.taken}/{adh.total}). {adh.pattern}</p>}
-      <div className="cols2">
-        <div><label htmlFor="h-person">Person</label>
-          <select id="h-person" value={personId} onChange={(e) => setPersonId(e.target.value)}>
-            <option value="">Everyone</option>
-            {people.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
-          </select></div>
-        <div><label htmlFor="h-from">From</label><input id="h-from" type="date" value={from} onChange={(e) => setFrom(e.target.value)} /></div>
+      <div className="stickybar">
+        {adh && <p className="muted" style={{ margin: "0 0 8px" }}>Last 7 days: {Math.round(adh.rate * 100)} percent taken ({adh.taken}/{adh.total}). {adh.pattern}</p>}
+        <div className="cols2">
+          <div><label htmlFor="h-person">Person</label>
+            <select id="h-person" value={personId} onChange={(e) => setPersonId(e.target.value)}>
+              <option value="">Everyone</option>
+              {people.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+            </select></div>
+          <div><label htmlFor="h-from">From</label><input id="h-from" type="date" value={from} onChange={(e) => setFrom(e.target.value)} /></div>
+        </div>
+        <label htmlFor="h-to">To</label><input id="h-to" type="date" value={to} onChange={(e) => setTo(e.target.value)} />
       </div>
-      <label htmlFor="h-to">To</label><input id="h-to" type="date" value={to} onChange={(e) => setTo(e.target.value)} />
       <div className="sect">Doses</div>
       {doses.map((d) => (
-        <div className="row" key={d.id}>
-          <div><span className="small">{d.localDate.slice(5)} {d.localTime}</span><div className="rname">{medNames.get(d.medId) ?? "Medication"}</div></div>
-          <div><span className={`chip ${d.status}`}>{d.status}</span> <PersonTag p={names.get(d.personId)} /></div>
+        <div className="hrow" key={d.id}>
+          <div className="hwhen"><span className="hdate">{d.localDate.slice(5).replace("-", "/")}</span><span className="htime">{d.localTime}</span></div>
+          <div className="hwhat"><span className="rname">{medNames.get(d.medId) ?? "Medication"}</span><span className="dsub">For {names.get(d.personId)?.name ?? "unknown"}</span></div>
+          <div className={`hstatus ${d.status}`}>{d.status}</div>
         </div>
       ))}
       {!doses.length && <div className="empty"><h3>No dose records in range</h3></div>}
