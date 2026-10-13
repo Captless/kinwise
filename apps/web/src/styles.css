@@ -75,12 +75,20 @@ p { margin: 0 0 12px; }
 .hpane { display: flex; flex-direction: column; height: calc(100dvh - var(--head-h) - 24px); }
 .hpane h1 { margin-bottom: 4px; }
 .hfilters { flex: none; }
-.hero { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: var(--radius-sm); background: var(--green-700); color: #fff; margin-bottom: 8px; }
-.hero-pct { font-size: 34px; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1; }
-.hero-pct span { font-size: 16px; font-weight: 700; }
-.hero-meta { display: flex; flex-direction: column; min-width: 0; font-size: var(--caption); }
-.hero-meta strong { font-size: 14px; }
-.hero-meta span { opacity: 0.85; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hero { display: flex; align-items: center; gap: 14px; padding: 12px; border-radius: var(--radius-sm); background: var(--green-700); color: #fff; margin-bottom: 8px; }
+.ring { flex: none; width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; }
+.ring-in { width: 48px; height: 48px; border-radius: 50%; background: var(--green-700); display: grid; place-items: center; font-weight: 800; font-size: 14px; font-variant-numeric: tabular-nums; }
+.hero-meta { display: flex; flex-direction: column; gap: 3px; font-size: 14px; font-weight: 700; }
+.hero-meta .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 7px; }
+.dot.t { background: #fff; }
+.dot.s { background: var(--amber-wash); }
+.dot.d { background: transparent; border: 1px solid #fff; }
+.buckets { display: flex; flex-direction: column; gap: 5px; margin-bottom: 8px; }
+.bucket { display: flex; align-items: center; gap: 8px; font-size: var(--caption); color: var(--ink-600); }
+.blabel { flex: none; width: 74px; font-weight: 700; }
+.bbar { flex: 1; height: 6px; border-radius: 3px; background: var(--green-100); overflow: hidden; }
+.bfill { display: block; height: 100%; border-radius: 3px; background: var(--green-700); }
+.bnum { flex: none; min-width: 36px; text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; }
 .chips { display: flex; gap: 6px; overflow-x: auto; padding: 2px 0 8px; }
 .chips button { flex: none; padding: 7px 14px; font-size: 14px; font-weight: 700; border-radius: 999px; border: 1px solid var(--line); background: var(--paper); color: var(--ink-600); cursor: pointer; font-family: inherit; white-space: nowrap; }
 .chips button.on { background: var(--green-100); border-color: var(--green-700); color: var(--green-800); }

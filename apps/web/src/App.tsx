@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import {
-  addMeasurement, addMed, addPerson, adherence, confirmDose, datePlus, dosesOn, doseHistory,
+  addMeasurement, addMed, addPerson, confirmDose, datePlus, dosesOn, doseHistory,
   ensureDoses, exportJSON, importJSON, listMeasurements, listMeds, listPeople,
   reopenDose, savePerson, setMedStatus, toLocalDate,
-  type Adherence, type Dose, type Med, type Measurement, type Person,
+  type Dose, type Med, type Measurement, type Person,
 } from "./db";
 
 type Tab = "today" | "meds" | "measure" | "history" | "settings";
@@ -241,7 +241,7 @@ function fmtConfirmed(iso: string): string {
   let h = d.getHours();
   const ap = h >= 12 ? "PM" : "AM";
   h = h % 12 || 12;
-  return `${date}, ${h}:${String(d.getMinutes()).padStart(2, "0")} ${ap}`;
+  return `at ${h}:${String(d.getMinutes()).padStart(2, "0")} ${ap}, ${date}`;
 }
 
 function dayLabel(iso: string): string {
@@ -257,12 +257,10 @@ function History({ people, names, medNames }: { people: Person[]; names: Map<str
   const [to, setTo] = useState(today);
   const [doses, setDoses] = useState<Dose[]>([]);
   const [meas, setMeas] = useState<Measurement[]>([]);
-  const [adh, setAdh] = useState<Adherence | null>(null);
   const [hTab, setHTab] = useState<"doses" | "meas">("doses");
   useEffect(() => {
     doseHistory(from, to, personId).then(setDoses);
     listMeasurements(personId).then((all) => setMeas(all.filter((m) => m.measuredAt.slice(0, 10) >= from && m.measuredAt.slice(0, 10) <= to)));
-    adherence(7).then(setAdh);
   }, [personId, from, to]);
   const pick = (p: "7" | "14" | "30" | "custom") => {
     setPreset(p);
@@ -270,7 +268,13 @@ function History({ people, names, medNames }: { people: Person[]; names: Map<str
   };
   const taken = doses.filter((d) => d.status === "taken").length;
   const skipped = doses.filter((d) => d.status === "skipped").length;
+  const open = doses.filter((d) => d.status === "due").length;
   const pct = doses.length ? Math.round((taken / doses.length) * 100) : 0;
+  const buckets: [string, Dose[]][] = [["Morning", []], ["Afternoon", []], ["Evening", []]];
+  doses.forEach((d) => {
+    const h = Number(d.localTime.slice(0, 2));
+    buckets[h < 12 ? 0 : h < 17 ? 1 : 2][1].push(d);
+  });
   const dgroups = new Map<string, Dose[]>();
   doses.forEach((d) => { const g = dgroups.get(d.localDate) ?? []; g.push(d); dgroups.set(d.localDate, g); });
   const mgroups = new Map<string, Measurement[]>();
@@ -280,8 +284,25 @@ function History({ people, names, medNames }: { people: Person[]; names: Map<str
       <h1>History</h1>
       <div className="hfilters">
         <div className="hero">
-          <div className="hero-pct">{pct}<span>%</span></div>
-          <div className="hero-meta"><strong>{taken} taken · {skipped} skipped</strong><span>{doses.length} doses in range{preset === "7" && adh ? `. ${adh.pattern}` : ""}</span></div>
+          <div className="ring" style={{ background: `conic-gradient(#fff ${pct}%, rgba(255,255,255,0.25) ${pct}%)` }}><span className="ring-in">{pct}%</span></div>
+          <div className="hero-meta">
+            <span><i className="dot t" />Taken {taken}</span>
+            <span><i className="dot s" />Skipped {skipped}</span>
+            <span><i className="dot d" />Due {open}</span>
+          </div>
+        </div>
+        <div className="buckets">
+          {buckets.map(([label, list]) => {
+            const t = list.filter((d) => d.status === "taken").length;
+            const p = list.length ? Math.round((t / list.length) * 100) : 0;
+            return (
+              <div className="bucket" key={label}>
+                <span className="blabel">{label}</span>
+                <span className="bbar"><span className="bfill" style={{ width: `${p}%` }} /></span>
+                <span className="bnum">{t}/{list.length}</span>
+              </div>
+            );
+          })}
         </div>
         <div className="chips" role="group" aria-label="Person filter">
           <button className={personId === "" ? "on" : ""} onClick={() => setPersonId("")}>All</button>
