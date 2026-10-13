@@ -42,7 +42,7 @@ export default function App() {
 
   return (
     <div className="shell">
-      <div className="stickyhead"><header className="topbar"><div className="brand">Kinwise</div></header>{nav}</div>
+      <div className="stickyhead">{nav}</div>
       <main className="content">
         {err && <p className="err">{err}</p>}
         {tab === "today" && <Today doses={doses} names={names} medNames={medNames} reload={refresh} />}
@@ -61,13 +61,13 @@ function DoseRow({ d, person, med, reload }: { d: Dose; person?: Person; med: st
   const od = d.status === "due" && diffMin > 0;
   const cls = d.status === "taken" ? "ritem done" : od ? "ritem overdue" : "ritem";
   const sub =
-    d.status === "taken" ? `Taken${d.confirmedAt ? ` ${d.confirmedAt.slice(11, 16)}` : ""}` :
+    d.status === "taken" ? (d.confirmedAt ? `Taken ${fmtConfirmed(d.confirmedAt)}` : "Taken") :
     d.status === "skipped" ? "Skipped" :
     od ? `Overdue ${diffMin} min` : diffMin > -15 ? "Due now" : `Due in ${-diffMin} min`;
   const act = (fn: Promise<void>) => fn.then(reload);
   return (
     <div className={cls}>
-      <div className="dline"><span className="rtime">{d.localTime}</span><span className="rname">{med}</span>{od && <span className="chip due">overdue</span>}</div>
+      <div className="dline"><span className="rtime">{fmtTime(d.localTime)}</span><span className="rname">{med}</span>{od && <span className="chip due">overdue</span>}</div>
       <div className="dsub">For {person?.name ?? "unknown"} · {sub}</div>
       {d.status === "due" && (
         <div className="dose-actions">
@@ -82,18 +82,34 @@ function DoseRow({ d, person, med, reload }: { d: Dose; person?: Person; med: st
 
 function Today({ doses, names, medNames, reload }: { doses: Dose[]; names: Map<string, Person>; medNames: Map<string, string>; reload: () => void }) {
   const now = new Date().toISOString();
+  const [showDone, setShowDone] = useState(false);
   const overdue = doses.filter((d) => d.status === "due" && d.scheduledAt <= now);
-  const rest = doses.filter((d) => !(d.status === "due" && d.scheduledAt <= now));
+  const upcoming = doses.filter((d) => d.status === "due" && d.scheduledAt > now);
+  const done = doses.filter((d) => d.status !== "due");
   if (!doses.length) return <><h1>Today</h1><div className="empty"><h3>Nothing scheduled</h3><p className="muted">Add a medication to begin.</p></div></>;
   return (
     <>
       <h1>Today</h1>
-      <p className="muted">{overdue.length ? `${overdue.length} overdue. Start here.` : "All caught up for now."}</p>
+      <p className="muted">{overdue.length ? `${overdue.length} overdue. Start here.` : upcoming.length ? "All caught up for now." : "All done for today."}</p>
       {overdue.length > 0 && <div className="overband">{overdue.length} dose{overdue.length > 1 ? "s" : ""} past time</div>}
       <div className="rail">
         {overdue.map((d) => <DoseRow key={d.id} d={d} person={names.get(d.personId)} med={medNames.get(d.medId) ?? "Medication"} reload={reload} />)}
-        {rest.map((d) => <DoseRow key={d.id} d={d} person={names.get(d.personId)} med={medNames.get(d.medId) ?? "Medication"} reload={reload} />)}
+        {upcoming.map((d) => <DoseRow key={d.id} d={d} person={names.get(d.personId)} med={medNames.get(d.medId) ?? "Medication"} reload={reload} />)}
       </div>
+      {done.length > 0 && (
+        <div className="pgroup">
+          <button className="pgroup-head" onClick={() => setShowDone((v) => !v)} aria-expanded={showDone}>
+            <span className="pgroup-name">Completed</span>
+            <span className="small">{done.length}</span>
+            <span className="chev" aria-hidden="true">{showDone ? "▾" : "▸"}</span>
+          </button>
+          {showDone && (
+            <div className="rail">
+              {done.map((d) => <DoseRow key={d.id} d={d} person={names.get(d.personId)} med={medNames.get(d.medId) ?? "Medication"} reload={reload} />)}
+            </div>
+          )}
+        </div>
+      )}
     </>
   );
 }
@@ -234,6 +250,12 @@ function Measure({ people, reload }: { people: Person[]; reload: () => void }) {
   );
 }
 
+function fmtTime(hhmm: string): string {
+  const [h, m] = hhmm.split(":");
+  let h12 = Number(h) % 12 || 12;
+  return `${h12}:${m} ${Number(h) >= 12 ? "PM" : "AM"}`;
+}
+
 function fmtConfirmed(iso: string): string {
   if (!iso) return "";
   const d = new Date(iso);
@@ -332,7 +354,7 @@ function History({ people, names, medNames }: { people: Person[]; names: Map<str
           {list.map((d) => (
             <div className="e" key={d.id}>
               <span className={`glyph ${d.status}`}>{d.status === "taken" ? "✓" : d.status === "skipped" ? "!" : "·"}</span>
-              <div className="hwhat"><span className="rname">{d.localTime} · {medNames.get(d.medId) ?? "Medication"}</span><span className="dsub">{names.get(d.personId)?.name ?? "unknown"}{d.status === "taken" && d.confirmedAt ? ` · Taken ${fmtConfirmed(d.confirmedAt)}` : ""}</span></div>
+              <div className="hwhat"><span className="rname">{fmtTime(d.localTime)} · {medNames.get(d.medId) ?? "Medication"}</span><span className="dsub">{names.get(d.personId)?.name ?? "unknown"}{d.status === "taken" && d.confirmedAt ? ` · Taken ${fmtConfirmed(d.confirmedAt)}` : ""}</span></div>
             </div>
           ))}
         </div>
@@ -348,7 +370,7 @@ function History({ people, names, medNames }: { people: Person[]; names: Map<str
           {list.map((m) => (
             <div className="e" key={m.id}>
               <span className="glyph taken">+</span>
-              <div className="hwhat"><span className="rname">{m.spo2}% · {m.pulse} bpm</span><span className="dsub">{names.get(m.personId)?.name ?? "unknown"} · {m.measuredAt.slice(11, 16)}</span></div>
+              <div className="hwhat"><span className="rname">{m.spo2}% · {m.pulse} bpm</span><span className="dsub">{names.get(m.personId)?.name ?? "unknown"} · {fmtTime(m.measuredAt.slice(11, 16))}</span></div>
             </div>
           ))}
         </div>
@@ -392,7 +414,7 @@ function People({ reload }: { reload: () => void }) {
           <div className="dialog" role="dialog" aria-modal="true" aria-label="Add person" onClick={(e) => e.stopPropagation()}>
             <h2>Add person</h2>
             <label htmlFor="person-name">Name</label>
-            <input id="person-name" autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Grandma Lin" onKeyDown={(e) => { if (e.key === "Enter") add(); }} />
+            <input id="person-name" autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder="Name" onKeyDown={(e) => { if (e.key === "Enter") add(); }} />
             <div className="dose-actions">
               <button className="act skip" onClick={() => setShowModal(false)}>Cancel</button>
               <button className="act take" onClick={add}>Add</button>
