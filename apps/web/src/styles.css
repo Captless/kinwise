@@ -92,7 +92,7 @@ p { margin: 0 0 12px; }
 .chips { display: flex; gap: 6px; overflow-x: auto; padding: 2px 0 8px; }
 .chips button { flex: none; padding: 7px 14px; font-size: 14px; font-weight: 700; border-radius: 999px; border: 1px solid var(--line); background: var(--paper); color: var(--ink-600); cursor: pointer; font-family: inherit; white-space: nowrap; }
 .chips button.on { background: var(--green-100); border-color: var(--green-700); color: var(--green-800); }
-.day { display: flex; align-items: baseline; justify-content: space-between; padding: 10px 2px 4px; font-weight: 800; }
+.day { position: sticky; top: 0; z-index: 1; background: var(--paper); display: flex; align-items: baseline; justify-content: space-between; padding: 10px 2px 6px; font-weight: 800; }
 .e { display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-radius: var(--radius-sm); background: var(--green-50); margin-bottom: 6px; min-height: 48px; }
 .glyph { flex: none; width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; }
 .glyph.taken { background: var(--green-700); color: #fff; }
@@ -104,7 +104,7 @@ p { margin: 0 0 12px; }
 .htabs { display: flex; gap: 4px; margin: 10px 0 4px; }
 .htabs button { flex: 1 1 0; min-width: 0; padding: 7px 4px; font-size: 14px; font-weight: 700; border-radius: 999px; border: 1px solid var(--line); background: var(--paper); color: var(--ink-600); cursor: pointer; font-family: inherit; white-space: nowrap; }
 .htabs button.on { background: var(--green-700); border-color: var(--green-700); color: #fff; }
-.hscroll { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding: 8px 0; }
+.hscroll { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding: 0 0 8px; }
 .hwhen { min-width: 56px; }
 .htime { font-size: var(--body); }
 .hwhat .rname { font-size: 15px; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
