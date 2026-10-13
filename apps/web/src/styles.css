@@ -25,7 +25,7 @@ p { margin: 0 0 12px; }
 .mainnav button { flex: 1 1 0; min-width: 0; padding: 9px 2px; font-size: 13px; font-weight: 700; text-align: center; text-transform: capitalize; font-variant-numeric: tabular-nums; color: var(--ink-600); background: none; border: 0; border-radius: 0; cursor: pointer; font-family: inherit; white-space: nowrap; }
 .mainnav button:hover { background: var(--green-50); }
 .mainnav button[aria-current="page"] { background: none; color: var(--green-800); position: relative; }
-.mainnav button[aria-current="page"]::after { content: ""; position: absolute; left: 8px; right: 8px; bottom: 0; height: 2px; border-radius: 1px; background: linear-gradient(90deg, transparent, var(--green-700) 10%, var(--green-700) 90%, transparent); }
+.mainnav button[aria-current="page"]::after { content: ""; position: absolute; left: 8px; right: 8px; bottom: 0; height: 2px; border-radius: 1px; background: var(--green-700); }
 .content { padding: 8px 16px 64px; max-width: 760px; width: 100%; margin: 0 auto; }
 
 /* Timeline rail */
