@@ -72,11 +72,17 @@ p { margin: 0 0 12px; }
 .pgroup-head { display: flex; align-items: center; gap: 8px; width: 100%; padding: 10px 0; background: none; border: 0; cursor: pointer; font-family: inherit; font-size: var(--body); font-weight: 700; color: var(--ink-900); }
 .pgroup-name { flex: 1; text-align: left; }
 .chev { color: var(--ink-400); font-size: var(--caption); }
-.stickybar { position: sticky; top: var(--head-h); z-index: 5; background: var(--paper); padding: 8px 0 4px; }
+.hpane { display: flex; flex-direction: column; height: calc(100dvh - var(--head-h) - 24px); }
+.hpane h1 { margin-bottom: 4px; }
+.hfilters { flex: none; }
+.hsummary { margin: 0 0 8px; font-size: var(--caption); color: var(--ink-600); }
+.fcols3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.fcols3 input, .fcols3 select { font-size: 14px; padding: 9px 8px; margin: 4px 0 8px; }
+.fcols3 label { font-size: var(--caption); }
 .htabs { display: flex; gap: 4px; margin: 10px 0 4px; }
 .htabs button { flex: 1 1 0; min-width: 0; padding: 9px 4px; font-size: 15px; font-weight: 700; border-radius: 999px; border: 1px solid var(--line); background: var(--paper); color: var(--ink-600); cursor: pointer; font-family: inherit; white-space: nowrap; }
 .htabs button.on { background: var(--green-700); border-color: var(--green-700); color: #fff; }
-.hscroll { max-height: 55dvh; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding: 8px 0; }
+.hscroll { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding: 8px 0; }
 .hcard { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 0; border-radius: var(--radius-sm); background: var(--green-50); }
 .hwhen { display: flex; flex-direction: column; min-width: 64px; font-variant-numeric: tabular-nums; }
 .hdate { font-size: var(--caption); color: var(--ink-400); font-weight: 700; }

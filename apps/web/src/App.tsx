@@ -258,19 +258,19 @@ function History({ people, names, medNames }: { people: Person[]; names: Map<str
     adherence(7).then(setAdh);
   }, [personId, from, to]);
   return (
-    <>
+    <div className="hpane">
       <h1>History</h1>
-      <div className="stickybar">
-        {adh && <p className="muted" style={{ margin: "0 0 8px" }}>Last 7 days: {Math.round(adh.rate * 100)} percent taken ({adh.taken}/{adh.total}). {adh.pattern}</p>}
-        <div className="cols2">
+      <div className="hfilters">
+        {adh && <p className="hsummary">{Math.round(adh.rate * 100)}% taken ({adh.taken}/{adh.total}). {adh.pattern}</p>}
+        <div className="fcols3">
           <div><label htmlFor="h-person">Person</label>
             <select id="h-person" value={personId} onChange={(e) => setPersonId(e.target.value)}>
               <option value="">Everyone</option>
               {people.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select></div>
           <div><label htmlFor="h-from">From</label><input id="h-from" type="date" value={from} onChange={(e) => setFrom(e.target.value)} /></div>
+          <div><label htmlFor="h-to">To</label><input id="h-to" type="date" value={to} onChange={(e) => setTo(e.target.value)} /></div>
         </div>
-        <label htmlFor="h-to">To</label><input id="h-to" type="date" value={to} onChange={(e) => setTo(e.target.value)} />
         <div className="htabs" role="tablist" aria-label="History sections">
           <button role="tab" aria-selected={hTab === "doses"} className={hTab === "doses" ? "on" : ""} onClick={() => setHTab("doses")}>Doses ({doses.length})</button>
           <button role="tab" aria-selected={hTab === "meas"} className={hTab === "meas" ? "on" : ""} onClick={() => setHTab("meas")}>Measurements ({meas.length})</button>
@@ -299,7 +299,7 @@ function History({ people, names, medNames }: { people: Person[]; names: Map<str
       {!meas.length && <div className="empty"><h3>No measurements in range</h3></div>}
       </div>
       )}
-    </>
+    </div>
   );
 }
 
