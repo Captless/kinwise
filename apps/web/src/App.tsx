@@ -48,7 +48,7 @@ export default function App() {
         {tab === "today" && <Today doses={doses} names={names} medNames={medNames} reload={refresh} />}
         {tab === "meds" && <Meds meds={meds} people={people} reload={refresh} />}
         {tab === "measure" && <Measure people={people} reload={refresh} />}
-        {tab === "history" && <History people={people} names={names} medNames={medNames} />}
+        {tab === "history" && <History people={people} names={names} medNames={medNames} meds={meds} todayDoses={doses} />}
         {tab === "settings" && <Settings reload={refresh} />}
       </main>
     </div>
@@ -278,7 +278,7 @@ function dayLabel(iso: string): string {
   return `${d.toLocaleDateString("en-US", { weekday: "short" })} ${d.getMonth() + 1}/${d.getDate()}/${String(d.getFullYear()).slice(2)}`;
 }
 
-function History({ people, names, medNames }: { people: Person[]; names: Map<string, Person>; medNames: Map<string, string> }) {
+function History({ people, names, medNames, meds, todayDoses }: { people: Person[]; names: Map<string, Person>; medNames: Map<string, string>; meds: Med[]; todayDoses: Dose[] }) {
   const today = toLocalDate(new Date());
   const [personId, setPersonId] = useState("");
   const [preset, setPreset] = useState<"7" | "14" | "30" | "custom">("7");
@@ -295,15 +295,6 @@ function History({ people, names, medNames }: { people: Person[]; names: Map<str
     setPreset(p);
     if (p !== "custom") { setFrom(datePlus(p === "7" ? -6 : p === "14" ? -13 : -29)); setTo(today); }
   };
-  const taken = doses.filter((d) => d.status === "taken").length;
-  const skipped = doses.filter((d) => d.status === "skipped").length;
-  const open = doses.filter((d) => d.status === "due").length;
-  const pct = doses.length ? Math.round((taken / doses.length) * 100) : 0;
-  const buckets: [string, Dose[]][] = [["Morning", []], ["Afternoon", []], ["Evening", []]];
-  doses.forEach((d) => {
-    const h = Number(d.localTime.slice(0, 2));
-    buckets[h < 12 ? 0 : h < 17 ? 1 : 2][1].push(d);
-  });
   const dgroups = new Map<string, Dose[]>();
   doses.forEach((d) => { const g = dgroups.get(d.localDate) ?? []; g.push(d); dgroups.set(d.localDate, g); });
   const mgroups = new Map<string, Measurement[]>();
@@ -312,26 +303,10 @@ function History({ people, names, medNames }: { people: Person[]; names: Map<str
     <div className="hpane">
       <h1>History</h1>
       <div className="hfilters">
-        <div className="hero">
-          <div className="ring" style={{ background: `conic-gradient(#fff ${pct}%, rgba(255,255,255,0.25) ${pct}%)` }}><span className="ring-in">{pct}%</span></div>
-          <div className="hero-meta">
-            <span><i className="dot t" />Taken {taken}</span>
-            <span><i className="dot s" />Skipped {skipped}</span>
-            <span><i className="dot d" />Due {open}</span>
-          </div>
-        </div>
-        <div className="buckets">
-          {buckets.map(([label, list]) => {
-            const t = list.filter((d) => d.status === "taken").length;
-            const p = list.length ? Math.round((t / list.length) * 100) : 0;
-            return (
-              <div className="bucket" key={label}>
-                <span className="blabel">{label}</span>
-                <span className="bbar"><span className="bfill" style={{ width: `${p}%` }} /></span>
-                <span className="bnum">{t}/{list.length}</span>
-              </div>
-            );
-          })}
+        <div className="hero hero-text">
+          <div className="hero-scope">{personId ? <><i className="sdot" style={{ background: names.get(personId)?.color ?? "#fff" }} />{names.get(personId)?.name ?? "Unknown"}</> : "Everyone"} · {preset === "custom" ? "Custom" : `${preset}D`}</div>
+          <div className="hero-line">{meds.filter((m) => !personId || m.personId === personId).length} medications tracked</div>
+          <div className="hero-line">{(() => { const n = todayDoses.filter((d) => d.status === "due" && (!personId || d.personId === personId)).length; return n ? `${n} doses need attention` : "All caught up"; })()}</div>
         </div>
         <div className="fcols2">
           <div><label htmlFor="h-person">Person</label>

@@ -76,19 +76,10 @@ p { margin: 0 0 12px; }
 .hpane h1 { margin-bottom: 4px; }
 .hfilters { flex: none; }
 .hero { display: flex; align-items: center; gap: 14px; padding: 12px; border-radius: var(--radius-sm); background: var(--green-700); color: #fff; margin-bottom: 8px; }
-.ring { flex: none; width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; }
-.ring-in { width: 48px; height: 48px; border-radius: 50%; background: var(--green-700); display: grid; place-items: center; font-weight: 800; font-size: 14px; font-variant-numeric: tabular-nums; }
-.hero-meta { display: flex; flex-direction: column; gap: 3px; font-size: 14px; font-weight: 700; }
-.hero-meta .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 7px; }
-.dot.t { background: #fff; }
-.dot.s { background: var(--amber-wash); }
-.dot.d { background: transparent; border: 1px solid #fff; }
-.buckets { display: flex; flex-direction: column; gap: 5px; margin-bottom: 8px; }
-.bucket { display: flex; align-items: center; gap: 8px; font-size: var(--caption); color: var(--ink-600); }
-.blabel { flex: none; width: 74px; font-weight: 700; }
-.bbar { flex: 1; height: 6px; border-radius: 3px; background: var(--green-100); overflow: hidden; }
-.bfill { display: block; height: 100%; border-radius: 3px; background: var(--green-700); }
-.bnum { flex: none; min-width: 36px; text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; }
+.hero-text { flex-direction: column; align-items: flex-start; gap: 2px; }
+.hero-scope { font-weight: 800; font-size: 15px; display: flex; align-items: center; }
+.hero-scope .sdot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 7px; }
+.hero-line { font-size: 14px; opacity: 0.9; }
 .day { position: sticky; top: 0; z-index: 1; background: var(--paper); display: flex; align-items: baseline; justify-content: space-between; padding: 10px 2px 6px; font-weight: 800; }
 .e { display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-radius: var(--radius-sm); background: var(--green-50); margin-bottom: 6px; min-height: 48px; }
 .glyph { flex: none; width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; }
