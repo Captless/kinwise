@@ -333,14 +333,19 @@ function History({ people, names, medNames }: { people: Person[]; names: Map<str
             );
           })}
         </div>
-        <div className="chips" role="group" aria-label="Person filter">
-          <button className={personId === "" ? "on" : ""} onClick={() => setPersonId("")}>All</button>
-          {people.map((p) => <button key={p.id} className={personId === p.id ? "on" : ""} onClick={() => setPersonId(p.id)}>{p.name}</button>)}
-        </div>
-        <div className="chips" role="group" aria-label="Date range">
-          {(["7", "14", "30", "custom"] as const).map((p) => (
-            <button key={p} className={preset === p ? "on" : ""} onClick={() => pick(p)}>{p === "custom" ? "Custom" : `${p}D`}</button>
-          ))}
+        <div className="fcols2">
+          <div><label htmlFor="h-person">Person</label>
+            <select id="h-person" value={personId} onChange={(e) => setPersonId(e.target.value)}>
+              <option value="">All</option>
+              {people.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+            </select></div>
+          <div><label htmlFor="h-range">Range</label>
+            <select id="h-range" value={preset} onChange={(e) => pick(e.target.value as "7" | "14" | "30" | "custom")}>
+              <option value="7">7D</option>
+              <option value="14">14D</option>
+              <option value="30">30D</option>
+              <option value="custom">Custom</option>
+            </select></div>
         </div>
         {preset === "custom" && (
           <div className="fcols3">

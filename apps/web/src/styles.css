@@ -89,16 +89,15 @@ p { margin: 0 0 12px; }
 .bbar { flex: 1; height: 6px; border-radius: 3px; background: var(--green-100); overflow: hidden; }
 .bfill { display: block; height: 100%; border-radius: 3px; background: var(--green-700); }
 .bnum { flex: none; min-width: 36px; text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; }
-.chips { display: flex; gap: 6px; overflow-x: auto; padding: 2px 0 8px; }
-.chips button { flex: none; padding: 7px 14px; font-size: 14px; font-weight: 700; border-radius: 999px; border: 1px solid var(--line); background: var(--paper); color: var(--ink-600); cursor: pointer; font-family: inherit; white-space: nowrap; }
-.chips button.on { background: var(--green-100); border-color: var(--green-700); color: var(--green-800); }
 .day { position: sticky; top: 0; z-index: 1; background: var(--paper); display: flex; align-items: baseline; justify-content: space-between; padding: 10px 2px 6px; font-weight: 800; }
 .e { display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-radius: var(--radius-sm); background: var(--green-50); margin-bottom: 6px; min-height: 48px; }
 .glyph { flex: none; width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; }
 .glyph.taken { background: var(--green-700); color: #fff; }
 .glyph.skipped { background: var(--amber-wash); color: var(--amber-ink); border: 1px solid var(--amber-ink); }
 .glyph.due { background: var(--paper-warm); color: var(--ink-400); border: 1px solid var(--line); }
-.fcols3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.fcols2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.fcols2 input, .fcols2 select { font-size: 14px; padding: 9px 8px; margin: 4px 0 8px; }
+.fcols2 label { font-size: var(--caption); }
 .fcols3 input, .fcols3 select { font-size: 14px; padding: 9px 8px; margin: 4px 0 8px; }
 .fcols3 label { font-size: var(--caption); }
 .htabs { display: flex; gap: 4px; margin: 10px 0 4px; }
