@@ -77,8 +77,7 @@ p { margin: 0 0 12px; }
 .hfilters { flex: none; }
 .hero { display: flex; align-items: center; gap: 14px; padding: 12px; border-radius: var(--radius-sm); background: var(--green-700); color: #fff; margin-bottom: 8px; }
 .hero-text { flex-direction: column; align-items: flex-start; gap: 2px; }
-.hero-scope { font-weight: 800; font-size: 15px; display: flex; align-items: center; }
-.hero-scope .sdot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 7px; }
+.hero-scope { font-weight: 800; font-size: 15px; }
 .hero-line { font-size: 14px; opacity: 0.9; }
 .day { position: sticky; top: 0; z-index: 1; background: var(--paper); display: flex; align-items: baseline; justify-content: space-between; padding: 10px 2px 6px; font-weight: 800; }
 .e { display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-radius: var(--radius-sm); background: var(--green-50); margin-bottom: 6px; min-height: 48px; }

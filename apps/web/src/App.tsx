@@ -146,9 +146,9 @@ function Meds({ meds, people, reload }: { meds: Med[]; people: Person[]; reload:
   const [openGroup, setOpenGroup] = useState<string | null>(null);
   const [openMed, setOpenMed] = useState<string | null>(null);
   const [showAdd, setShowAdd] = useState(false);
-  const groups = [...people.map((p) => ({ id: p.id, name: p.name, color: p.color, items: meds.filter((m) => m.personId === p.id) }))];
+  const groups = [...people.map((p) => ({ id: p.id, name: p.name, items: meds.filter((m) => m.personId === p.id) }))];
   const unassigned = meds.filter((m) => !people.some((p) => p.id === m.personId));
-  if (unassigned.length) groups.push({ id: "", name: "Unassigned", color: "#999", items: unassigned });
+  if (unassigned.length) groups.push({ id: "", name: "Unassigned", items: unassigned });
   const save = async () => {
     setMsg("");
     try {
@@ -172,7 +172,6 @@ function Meds({ meds, people, reload }: { meds: Med[]; people: Person[]; reload:
         return (
           <div className="pgroup" key={g.id || "unassigned"}>
             <button className="pgroup-head" onClick={() => setOpenGroup(open ? null : g.id)} aria-expanded={open}>
-              <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: "50%", background: g.color }} />
               <span className="pgroup-name">{g.name}</span>
               <span className="small">{g.items.length}</span>
               <span className="chev" aria-hidden="true">{open ? "▾" : "▸"}</span>
@@ -304,7 +303,7 @@ function History({ people, names, medNames, meds, todayDoses }: { people: Person
       <h1>History</h1>
       <div className="hfilters">
         <div className="hero hero-text">
-          <div className="hero-scope">{personId ? <><i className="sdot" style={{ background: names.get(personId)?.color ?? "#fff" }} />{names.get(personId)?.name ?? "Unknown"}</> : "Everyone"} · {preset === "custom" ? "Custom" : `${preset}D`}</div>
+          <div className="hero-scope">{personId ? (names.get(personId)?.name ?? "Unknown") : "Everyone"} · {preset === "custom" ? "Custom" : `${preset}D`}</div>
           <div className="hero-line">{meds.filter((m) => !personId || m.personId === personId).length} medications tracked</div>
           <div className="hero-line">{(() => { const n = todayDoses.filter((d) => d.status === "due" && (!personId || d.personId === personId)).length; return n ? `${n} doses need attention` : "All caught up"; })()}</div>
         </div>
@@ -390,7 +389,7 @@ function People({ reload }: { reload: () => void }) {
       <p className="muted">Deactivating hides them from pickers but keeps records.</p>
       {list.map((p) => (
         <div className="row" key={p.id}>
-          <div><span style={{ display: "inline-block", width: 12, height: 12, borderRadius: "50%", background: p.color, marginRight: 8 }} /><strong>{p.name}</strong> {!p.active && <span className="chip">inactive</span>}</div>
+          <div><strong>{p.name}</strong> {!p.active && <span className="chip">inactive</span>}</div>
           <button className="ghost sm" onClick={() => savePerson({ ...p, active: !p.active }).then(load)}>{p.active ? "Deactivate" : "Reactivate"}</button>
         </div>
       ))}

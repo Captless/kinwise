@@ -1,6 +1,6 @@
 import { openDB, type DBSchema, type IDBPDatabase } from "idb";
 
-export interface Person { id: string; name: string; color: string; active: boolean; createdAt: string; updatedAt: string }
+export interface Person { id: string; name: string; active: boolean; createdAt: string; updatedAt: string }
 export interface Med { id: string; personId: string; name: string; form: string; strength: string; instructions: string; notes: string; status: "active" | "paused" | "discontinued"; startDate: string; endDate: string; pillCount: number | null; createdAt: string; updatedAt: string }
 export interface Schedule { id: string; medId: string; type: "daily" | "weekdays"; times: string[]; weekdays: number[]; startDate: string; endDate: string; active: boolean }
 export interface Dose { id: string; medId: string; scheduleId: string; personId: string; scheduledAt: string; localDate: string; localTime: string; status: "due" | "taken" | "skipped"; confirmedAt: string; note: string }
@@ -35,7 +35,6 @@ export function db(): Promise<IDBPDatabase<KinwiseDB>> {
 
 export const uid = () => (crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`);
 export const nowISO = () => new Date().toISOString();
-export const COLORS = ["#1a5c3f", "#8a5a00", "#274690", "#93326e", "#b3541e", "#5b5bd6"];
 export const PRESETS: { label: string; time: string }[] = [
   { label: "Morning", time: "08:00" }, { label: "Noon", time: "12:00" },
   { label: "Evening", time: "18:00" }, { label: "Night", time: "21:00" },
@@ -91,8 +90,7 @@ export async function listPeople(): Promise<Person[]> {
   return all.sort((a, b) => a.name.localeCompare(b.name));
 }
 export async function addPerson(name: string): Promise<Person> {
-  const existing = await listPeople();
-  const p: Person = { id: uid(), name: name.trim().slice(0, 60), color: COLORS[existing.length % COLORS.length], active: true, createdAt: nowISO(), updatedAt: nowISO() };
+  const p: Person = { id: uid(), name: name.trim().slice(0, 60), active: true, createdAt: nowISO(), updatedAt: nowISO() };
   await (await db()).put("people", p);
   return p;
 }
