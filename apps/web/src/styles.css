@@ -110,7 +110,8 @@ button.ghost { padding: 12px 14px; font-size: var(--body); font-weight: 600; bor
 button.ghost:hover { background: var(--green-50); }
 button.ghost.danger { border-color: var(--red-ink); color: var(--red-ink); }
 button.ghost.sm { padding: 8px 12px; font-size: 15px; }
-button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid var(--green-500); outline-offset: 2px; }
+button:focus, input:focus, select:focus, textarea:focus { outline: none; }
+input:focus, select:focus, textarea:focus { border-color: var(--line); background: var(--paper-warm); }
 
 label { font-weight: 650; display: block; }
 input, select { width: 100%; font-size: 18px; padding: 12px 14px; margin: 6px 0 14px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--paper); color: var(--ink-900); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
